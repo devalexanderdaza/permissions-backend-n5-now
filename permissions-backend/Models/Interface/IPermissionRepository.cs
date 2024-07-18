@@ -7,9 +7,9 @@ public interface IPermissionRepository
 {
     /**
      * Fetches all permissions from the database
-     * @return IEnumerable<Permission> - A list of all permissions
+     * @return Task<IEnumerable<Permission>> - A list of all permissions
      */
-    IEnumerable<Permission> GetPermissions();
+    Task<IEnumerable<Permission>> GetPermissions();
     
     /**
      * Fetches a permission by its ID from the database

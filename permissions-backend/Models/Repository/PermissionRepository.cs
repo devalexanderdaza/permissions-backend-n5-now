@@ -4,27 +4,27 @@ using permissions_backend.Models.Interface;
 
 namespace permissions_backend.Models.Repository;
 
-public class PermissionRepository: IPermissionRepository
+public class PermissionRepository : IPermissionRepository
 {
     // The database context
     protected readonly ApplicationDbContext _context;
-    
+
     /**
      * Constructor
      * @param context - The database context
      */
     public PermissionRepository(ApplicationDbContext context) => _context = context;
-    
+
     /**
      * Fetches all permissions from the database
      * @return IEnumerable<Permission> - A list of all permissions
      * @throws DataException - If an error occurs while fetching permissions
      */
-    public IEnumerable<Permission> GetPermissions()
+    public async Task<IEnumerable<Permission>> GetPermissions()
     {
         try
         {
-            return _context.Permissions.ToList();        
+            return await _context.Permissions.ToListAsync();
         }
         catch (Exception e)
         {
@@ -43,7 +43,7 @@ public class PermissionRepository: IPermissionRepository
     {
         try
         {
-            return await _context.Permissions.FindAsync(id);
+            return await _context.Permissions.Include(p => p.TipoPermiso).FirstOrDefaultAsync(p => p.Id == id);
         }
         catch (Exception e)
         {
@@ -113,6 +113,7 @@ public class PermissionRepository: IPermissionRepository
             {
                 return false;
             }
+
             _context.Permissions.Remove(permission);
             await _context.SaveChangesAsync();
             return true;
