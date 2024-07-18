@@ -1,6 +1,7 @@
 @permissions_backend_HostAddress = http://localhost:5262
 
 GET {{permissions_backend_HostAddress}}/weatherforecast/
+POST {{permissions_backend_HostAddress}}/api/PermissionType/
 Accept: application/json
 
 ###

@@ -1,8 +1,8 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
-using permissions_backend.Models.Repository;
+using permissions_backend.Models.Interface;
 
-namespace permissions_backend.Models.Interface;
+namespace permissions_backend.Models.Repository;
 
 public class PermissionRepository: IPermissionRepository
 {
