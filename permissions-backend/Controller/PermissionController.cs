@@ -9,19 +9,19 @@ namespace permissions_backend.Controller;
 public class PermissionController : ControllerBase
 {
     private IPermissionRepository _permissionRepository;
-    
+
     public PermissionController(IPermissionRepository permissionRepository)
     {
         _permissionRepository = permissionRepository;
     }
-    
+
     [HttpGet]
     [ActionName("GetPermissions")]
     public IEnumerable<Permission> GetPermissions()
     {
         return _permissionRepository.GetPermissions();
     }
-    
+
     [HttpGet("{id}")]
     [ActionName("GetPermissionByIdAsync")]
     public async Task<ActionResult<Permission>> GetPermissionByIdAsync(int id)
@@ -31,16 +31,17 @@ public class PermissionController : ControllerBase
         {
             return storedPermission;
         }
+
         return NotFound();
     }
-    
+
     [HttpPost]
     [ActionName("CreatePermissionAsync")]
     public async Task<ActionResult<Permission>> CreatePermissionAsync(Permission permission)
     {
         return await _permissionRepository.CreatePermissionAsync(permission);
     }
-    
+
     [HttpPut("{id}")]
     [ActionName("UpdatePermissionAsync")]
     public async Task<ActionResult<Permission>> UpdatePermissionAsync(int id, Permission permission)
@@ -49,9 +50,10 @@ public class PermissionController : ControllerBase
         {
             return BadRequest();
         }
+
         return await _permissionRepository.UpdatePermissionAsync(permission);
     }
-    
+
     [HttpDelete("{id}")]
     [ActionName("DeletePermissionAsync")]
     public async Task<ActionResult<bool>> DeletePermissionAsync(int id)
@@ -61,6 +63,7 @@ public class PermissionController : ControllerBase
         {
             return NotFound();
         }
+
         return await _permissionRepository.DeletePermissionAsync(storedPermission);
     }
 }
