@@ -1,0 +1,6 @@
+﻿services:
+  permissions-backend:
+    image: permissions-backend
+    build:
+      context: .
+      dockerfile: permissions-backend/Dockerfile
