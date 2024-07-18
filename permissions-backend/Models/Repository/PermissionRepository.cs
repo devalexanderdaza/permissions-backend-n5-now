@@ -62,6 +62,8 @@ public class PermissionRepository: IPermissionRepository
     {
         try
         {
+            permission.NombreEmpleado = permission.NombreEmpleado.ToUpper();
+            permission.ApellidoEmpleado = permission.ApellidoEmpleado.ToUpper();
             await _context.Set<Permission>().AddAsync(permission);
             await _context.SaveChangesAsync();
             return permission;
@@ -83,6 +85,8 @@ public class PermissionRepository: IPermissionRepository
     {
         try
         {
+            permission.NombreEmpleado = permission.NombreEmpleado.ToUpper();
+            permission.ApellidoEmpleado = permission.ApellidoEmpleado.ToUpper();
             _context.Entry(permission).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return permission;

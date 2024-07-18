@@ -38,8 +38,6 @@ namespace permissions_backend.Controller
         [ActionName("CreatePermissionTypeAsync")]
         public async Task<PermissionType> CreatePermissionTypeAsync(PermissionType permissionType)
         {
-            var storedPermissionType = await _permissionTypeRepository.GetPermissionTypeById(permissionType.Id);
-            Console.WriteLine(storedPermissionType);
             return await _permissionTypeRepository.CreatePermissionTypeAsync(permissionType);
         }
         

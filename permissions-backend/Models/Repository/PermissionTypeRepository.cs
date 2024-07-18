@@ -62,6 +62,7 @@ namespace permissions_backend.Models.Repository
         {
             try
             {
+                permissionType.Descripcion = permissionType.Descripcion.ToUpper();
                 await _context.Set<PermissionType>().AddAsync(permissionType);
                 await _context.SaveChangesAsync();
                 return permissionType;
@@ -83,6 +84,7 @@ namespace permissions_backend.Models.Repository
         {
             try
             {
+                permissionType.Descripcion = permissionType.Descripcion.ToUpper();
                 _context.Entry(permissionType).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
                 return permissionType;

@@ -1,4 +1,4 @@
-namespace permissions_backend.Models.Repository;
+namespace permissions_backend.Models.Interface;
 
 /**
  * The permission repository interface
