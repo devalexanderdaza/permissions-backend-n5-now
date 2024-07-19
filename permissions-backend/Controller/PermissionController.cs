@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using permissions_backend.Models;
 using permissions_backend.Models.Dto;
-using permissions_backend.Models.Interface;
+using permissions_backend.Services.Interface;
 
 namespace permissions_backend.Controller;
 
@@ -9,13 +9,11 @@ namespace permissions_backend.Controller;
 [ApiController]
 public class PermissionController : ControllerBase
 {
-    private IPermissionRepository _permissionRepository;
-    private IPermissionTypeRepository _permissionTypeRepository;
+    private readonly IPermissionService _permissionService;
 
-    public PermissionController(IPermissionRepository permissionRepository, IPermissionTypeRepository permissionTypeRepository)
+    public PermissionController(IPermissionService permissionService)
     {
-        _permissionRepository = permissionRepository;
-        _permissionTypeRepository = permissionTypeRepository;
+        _permissionService = permissionService;
     }
 
     /**
@@ -27,17 +25,8 @@ public class PermissionController : ControllerBase
     [ActionName("GetPermissions")]
     public async Task<ActionResult<IEnumerable<PermissionDto>>> GetPermissions()
     {
-        var permissions = await _permissionRepository.GetPermissions();
-        var permissionsDto = permissions.Select(p => new PermissionDto
-        {
-            Id = p.Id,
-            NombreEmpleado = p.NombreEmpleado,
-            ApellidoEmpleado = p.ApellidoEmpleado,
-            TipoPermiso = p.TipoPermiso.Descripcion,
-            FechaPermiso = p.FechaPermiso
-        }).ToList();
-        
-        return Ok(permissionsDto);
+        var permissions = await _permissionService.GetAllPermissionsAsync();
+        return Ok(permissions);
     }
 
     /**
@@ -49,22 +38,13 @@ public class PermissionController : ControllerBase
     [ActionName("GetPermissionByIdAsync")]
     public async Task<ActionResult<PermissionDto>> GetPermissionByIdAsync(int id)
     {
-        var storedPermission = await _permissionRepository.GetPermissionById(id);
+        var storedPermission = await _permissionService.GetPermissionByIdAsync(id);
         if (storedPermission == null)
         {
             return NotFound();
-        }
-
-        var permissionDto = new PermissionDto
-        {
-            Id = storedPermission.Id,
-            NombreEmpleado = storedPermission.NombreEmpleado,
-            ApellidoEmpleado = storedPermission.ApellidoEmpleado,
-            TipoPermiso = storedPermission.TipoPermiso.Descripcion,
-            FechaPermiso = storedPermission.FechaPermiso
         };
         
-        return Ok(permissionDto);
+        return Ok(storedPermission);
     }
 
     /**
@@ -76,30 +56,13 @@ public class PermissionController : ControllerBase
     [ActionName("CreatePermissionAsync")]
     public async Task<ActionResult<PermissionDto>> CreatePermissionAsync(CreatePermissionDto permission)
     {
-        var permissionType = await _permissionTypeRepository.GetPermissionTypeById(permission.TipoPermiso);
-        if (permissionType == null)
+        try
         {
-            return BadRequest("Invalid Permission Type Id.");
+            return await _permissionService.CreatePermissionAsync(permission);
+        } catch (ArgumentException e)
+        {
+            return BadRequest(e.Message);
         }
-        var newPermission = new Permission
-        {
-            NombreEmpleado = permission.NombreEmpleado,
-            ApellidoEmpleado = permission.ApellidoEmpleado,
-            TipoPermiso = permissionType,
-            FechaPermiso = permission.FechaPermiso
-        };
-        var createdPermission = await _permissionRepository.CreatePermissionAsync(newPermission);
-        
-        var permissionDto = new PermissionDto
-        {
-            Id = createdPermission.Id,
-            NombreEmpleado = createdPermission.NombreEmpleado,
-            ApellidoEmpleado = createdPermission.ApellidoEmpleado,
-            TipoPermiso = createdPermission.TipoPermiso.Descripcion,
-            FechaPermiso = createdPermission.FechaPermiso
-        };
-        
-        return CreatedAtAction("CreatePermissionAsync", new { id = createdPermission.Id }, permissionDto);
     }
 
     /**
@@ -111,41 +74,20 @@ public class PermissionController : ControllerBase
     [ActionName("UpdatePermissionAsync")]
     public async Task<ActionResult<Permission>> UpdatePermissionAsync(int id, UpdatePermissionDto permission)
     {
-        if (id != permission.Id)
+        try
         {
-            return BadRequest();
+            var updatedPermission = await _permissionService.UpdatePermissionAsync(id, permission);
+            if (updatedPermission == null)
+            {
+                return NotFound();
+            }
+            return Ok(updatedPermission);
         }
-        
-        var storedPermission = await _permissionRepository.GetPermissionById(id);
-        if (storedPermission == null)
+        catch (Exception e)
         {
-            return NotFound();
+            Console.WriteLine(e);
+            return BadRequest(e.Message);
         }
-        
-        var permissionType = await _permissionTypeRepository.GetPermissionTypeById(permission.TipoPermiso);
-
-        if (permissionType == null)
-        {
-            return BadRequest("Invalid Permission Type Id.");
-        }
-        
-        storedPermission.NombreEmpleado = permission.NombreEmpleado;
-        storedPermission.ApellidoEmpleado = permission.ApellidoEmpleado;
-        storedPermission.TipoPermiso = permissionType;
-        storedPermission.FechaPermiso = permission.FechaPermiso;
-        
-        var updatedPermission = await _permissionRepository.UpdatePermissionAsync(storedPermission);
-        
-        var permissionDto = new PermissionDto
-        {
-            Id = updatedPermission.Id,
-            NombreEmpleado = updatedPermission.NombreEmpleado,
-            ApellidoEmpleado = updatedPermission.ApellidoEmpleado,
-            TipoPermiso = updatedPermission.TipoPermiso.Descripcion,
-            FechaPermiso = updatedPermission.FechaPermiso
-        };
-        
-        return Ok(permissionDto);
     }
 
     /**
@@ -157,12 +99,12 @@ public class PermissionController : ControllerBase
     [ActionName("DeletePermissionAsync")]
     public async Task<ActionResult<bool>> DeletePermissionAsync(int id)
     {
-        var storedPermission = await _permissionRepository.GetPermissionById(id);
-        if (storedPermission == null)
+        var deleted = await _permissionService.DeletePermissionAsync(id);
+        if (!deleted)
         {
-            return NotFound();
+            return NotFound("Permission not found");
         }
 
-        return await _permissionRepository.DeletePermissionAsync(storedPermission);
+        return Ok(deleted);
     }
 }

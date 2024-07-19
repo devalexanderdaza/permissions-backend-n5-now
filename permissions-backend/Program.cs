@@ -14,6 +14,7 @@ builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =
 builder.Services.AddTransient<IPermissionTypeRepository, PermissionTypeRepository>();
 builder.Services.AddTransient<IPermissionRepository, PermissionRepository>();
 builder.Services.AddTransient<IPermissionTypeService, PermissionTypeService>();
+builder.Services.AddTransient<IPermissionService, PermissionService>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

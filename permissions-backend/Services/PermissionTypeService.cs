@@ -9,11 +9,17 @@ public class PermissionTypeService: IPermissionTypeService
 {
     private IPermissionTypeRepository _permissionTypeRepository;
     
+    /**
+     * Constructor for the PermissionTypeService
+     */
     public PermissionTypeService(IPermissionTypeRepository permissionTypeRepository)
     {
         _permissionTypeRepository = permissionTypeRepository;
     }
     
+    /**
+     * Get all permission types
+     */
     public Task<IEnumerable<PermissionTypeDto>> GetAllPermissionTypesAsync()
     {
         var permissionTypes = _permissionTypeRepository.GetPermissionTypes();
@@ -24,21 +30,24 @@ public class PermissionTypeService: IPermissionTypeService
         }));
     }
 
-    public async Task<PermissionTypeDto> GetPermissionTypeByIdAsync(int id)
+    /**
+     * Get permission type by id
+     * @param id
+     */
+    public async Task<PermissionType> GetPermissionTypeByIdAsync(int id)
     {
         var storedPermissionType = await _permissionTypeRepository.GetPermissionTypeById(id);
         if (storedPermissionType == null)
         {
             return null;
         }
-
-        return new PermissionTypeDto
-        {
-            Id = storedPermissionType.Id,
-            Descripcion = storedPermissionType.Descripcion
-        };
+        return storedPermissionType;
     }
 
+    /**
+     * Create a new permission type
+     * @param permissionTypeDto
+     */
     public async Task<PermissionTypeDto> CreatePermissionTypeAsync(CreatePermissionTypeDto permissionTypeDto)
     {
         var permissionType = new PermissionType
@@ -53,6 +62,11 @@ public class PermissionTypeService: IPermissionTypeService
         };
     }
 
+    /**
+     * Update a permission type
+     * @param id
+     * @param permissionTypeDto
+     */
     public async Task<PermissionTypeDto> UpdatePermissionTypeAsync(int id, UpdatePermissionTypeDto permissionTypeDto)
     {
         if (id != permissionTypeDto.Id)
@@ -77,6 +91,10 @@ public class PermissionTypeService: IPermissionTypeService
         
     }
 
+    /**
+     * Delete a permission type
+     * @param id
+     */
     public async Task<bool> DeletePermissionTypeAsync(int id)
     {
         var storedPermissionType = await _permissionTypeRepository.GetPermissionTypeById(id);

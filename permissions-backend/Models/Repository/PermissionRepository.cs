@@ -24,7 +24,7 @@ public class PermissionRepository : IPermissionRepository
     {
         try
         {
-            return await _context.Permissions.ToListAsync();
+            return await _context.Permissions.Include(p => p.TipoPermiso).ToListAsync();
         }
         catch (Exception e)
         {

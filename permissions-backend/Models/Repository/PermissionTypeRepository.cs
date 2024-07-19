@@ -43,7 +43,7 @@ public class PermissionTypeRepository : IPermissionTypeRepository
     {
         try
         {
-            return await _context.PermissionTypes.FindAsync(id);
+            return await _context.PermissionTypes.FirstOrDefaultAsync(p => p.Id == id);
         }
         catch (Exception e)
         {
