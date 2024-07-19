@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using permissions_backend.Models;
 using permissions_backend.Models.Dto;
-using permissions_backend.Models.Interface;
+using permissions_backend.Services.Interface;
 
 namespace permissions_backend.Controller;
 
@@ -9,11 +8,11 @@ namespace permissions_backend.Controller;
 [ApiController]
 public class PermissionTypeController : ControllerBase
 {
-    private IPermissionTypeRepository _permissionTypeRepository;
+    private readonly IPermissionTypeService _permissionTypeService;
 
-    public PermissionTypeController(IPermissionTypeRepository permissionTypeRepository)
+    public PermissionTypeController(IPermissionTypeService permissionTypeService)
     {
-        _permissionTypeRepository = permissionTypeRepository;
+        _permissionTypeService = permissionTypeService;
     }
 
     /**
@@ -23,14 +22,10 @@ public class PermissionTypeController : ControllerBase
      */
     [HttpGet]
     [ActionName("GetPermissionTypes")]
-    public IEnumerable<PermissionTypeDto> GetPermissionTypes()
+    public async Task<ActionResult<IEnumerable<PermissionTypeDto>>> GetPermissionTypes()
     {
-        var permissionTypes = _permissionTypeRepository.GetPermissionTypes();
-        return permissionTypes.Select(pt => new PermissionTypeDto
-        {
-            Id = pt.Id,
-            Descripcion = pt.Descripcion
-        });
+        var permissionTypes = await _permissionTypeService.GetAllPermissionTypesAsync();
+        return Ok(permissionTypes);
     }
 
     /**
@@ -43,65 +38,46 @@ public class PermissionTypeController : ControllerBase
     [ActionName("GetPermissionTypeByIdAsync")]
     public async Task<ActionResult<PermissionTypeDto>> GetPermissionTypeByIdAsync(int id)
     {
-        var storedPermissionType = await _permissionTypeRepository.GetPermissionTypeById(id);
-        if (storedPermissionType == null)
+        var permissionType = await _permissionTypeService.GetPermissionTypeByIdAsync(id);
+        if (permissionType == null)
         {
             return NotFound();
         }
 
-        return new PermissionTypeDto
-        {
-            Id = storedPermissionType.Id,
-            Descripcion = storedPermissionType.Descripcion
-        };
+        return Ok(permissionType);
     }
 
     /**
      * Create a new permission type
      * POST /api/permission-type
-     * @param PermissionType permissionType
+     * @param CreatePermissionTypeDto permissionType
      * @return PermissionTypeDto
      */
     [HttpPost]
     [ActionName("CreatePermissionTypeAsync")]
-    public async Task<PermissionTypeDto> CreatePermissionTypeAsync(PermissionType permissionType)
+    public async Task<PermissionTypeDto> CreatePermissionTypeAsync(CreatePermissionTypeDto permissionType)
     {
-        var createdPermissionType = await _permissionTypeRepository.CreatePermissionTypeAsync(permissionType);
-        return new PermissionTypeDto
-        {
-            Id = createdPermissionType.Id,
-            Descripcion = createdPermissionType.Descripcion
-        };
+        return await _permissionTypeService.CreatePermissionTypeAsync(permissionType);
     }
 
     /**
      * Update a permission type
      * PUT /api/permission-type/{id}
      * @param int id
-     * @param PermissionType permissionType
+     * @param UpdatePermissionTypeDto permissionType
      * @return PermissionTypeDto
      */
     [HttpPut("{id}")]
     [ActionName("UpdatePermissionTypeAsync")]
-    public async Task<ActionResult<PermissionTypeDto>> UpdatePermissionTypeAsync(int id, PermissionType permissionType)
+    public async Task<ActionResult<PermissionTypeDto>> UpdatePermissionTypeAsync(int id, UpdatePermissionTypeDto permissionType)
     {
-        if (id != permissionType.Id)
+        var updatedPermissionType = await _permissionTypeService.UpdatePermissionTypeAsync(id, permissionType);
+        if (updatedPermissionType == null)
         {
-            return BadRequest();
-        }
-        
-        var storedPermissionType = await _permissionTypeRepository.GetPermissionTypeById(id);
-        if (storedPermissionType == null)
-        {
-            return NotFound();
+            return NotFound("Permission type not found");
         }
 
-        var updatedPermissionType = await _permissionTypeRepository.UpdatePermissionTypeAsync(permissionType);
-        return new PermissionTypeDto
-        {
-            Id = updatedPermissionType.Id,
-            Descripcion = updatedPermissionType.Descripcion
-        };
+        return Ok(updatedPermissionType);
     }
 
     /**
@@ -114,12 +90,12 @@ public class PermissionTypeController : ControllerBase
     [ActionName("DeletePermissionTypeAsync")]
     public async Task<ActionResult<bool>> DeletePermissionTypeAsync(int id)
     {
-        var storedPermissionType = await _permissionTypeRepository.GetPermissionTypeById(id);
-        if (storedPermissionType == null)
+        var deleted = await _permissionTypeService.DeletePermissionTypeAsync(id);
+        if (!deleted)
         {
-            return NotFound();
+            return NotFound("Permission type not found");
         }
 
-        return await _permissionTypeRepository.DeletePermissionTypeAsync(storedPermissionType);
+        return Ok(deleted);
     }
 }
