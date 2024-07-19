@@ -9,14 +9,16 @@ public class PermissionService: IPermissionService
 {
     private IPermissionRepository _permissionRepository;
     private readonly IPermissionTypeService _permissionTypeService;
+    private readonly IElasticsearchService _elasticsearchService;
  
     /**
      * Constructor for the PermissionService
      */
-    public PermissionService(IPermissionRepository permissionRepository, IPermissionTypeService permissionTypeService)
+    public PermissionService(IPermissionRepository permissionRepository, IPermissionTypeService permissionTypeService, IElasticsearchService elasticsearchService)
     {
         _permissionRepository = permissionRepository;
         _permissionTypeService = permissionTypeService;
+        _elasticsearchService = elasticsearchService;
     }
     
     /**
@@ -78,7 +80,7 @@ public class PermissionService: IPermissionService
         };
         var createdPermission = await _permissionRepository.CreatePermissionAsync(permission);
         
-        return new PermissionDto
+        var newPermissionDto = new PermissionDto
         {
             Id = createdPermission.Id,
             NombreEmpleado = createdPermission.NombreEmpleado,
@@ -86,6 +88,10 @@ public class PermissionService: IPermissionService
             TipoPermiso = createdPermission.TipoPermiso.Descripcion,
             FechaPermiso = createdPermission.FechaPermiso
         };
+        
+        await _elasticsearchService.IndexPermissionAsync(newPermissionDto);
+        
+        return newPermissionDto;
     }
 
     /**

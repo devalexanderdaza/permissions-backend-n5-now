@@ -10,10 +10,24 @@ namespace permissions_backend.Controller;
 public class PermissionController : ControllerBase
 {
     private readonly IPermissionService _permissionService;
+    private readonly IElasticsearchService _elasticsearchService;
 
-    public PermissionController(IPermissionService permissionService)
+    public PermissionController(IPermissionService permissionService, IElasticsearchService elasticsearchService)
     {
         _permissionService = permissionService;
+        _elasticsearchService = elasticsearchService;
+    }
+    
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchPermissions([FromQuery] string query)
+    {
+        if (string.IsNullOrEmpty(query))
+        {
+            return BadRequest("Query parameter is required");
+        }
+
+        var results = await _elasticsearchService.SearchPermissionsAsync(query);
+        return Ok(results);
     }
 
     /**
