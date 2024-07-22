@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using permissions_backend.Models;
 using permissions_backend.Models.Dto;
@@ -12,15 +13,18 @@ public class PermissionController : ControllerBase
     private readonly IPermissionService _permissionService;
     private readonly IElasticsearchService _elasticsearchService;
     private readonly IKafkaProducerService _kafkaProducerService;
+    private readonly IMediator _mediator;
 
     public PermissionController(
         IPermissionService permissionService, 
         IElasticsearchService elasticsearchService,
-        IKafkaProducerService kafkaProducerService)
+        IKafkaProducerService kafkaProducerService,
+        IMediator mediator)
     {
         _permissionService = permissionService;
         _elasticsearchService = elasticsearchService;
         _kafkaProducerService = kafkaProducerService;
+        _mediator = mediator;
     }
     
     [HttpGet("search")]
@@ -80,12 +84,14 @@ public class PermissionController : ControllerBase
     {
         try
         {
+            // var result = await _mediator.Send(new CreatePermissionCommand(permission));
             var createdPermission = await _permissionService.CreatePermissionAsync(permission);
             
             // kafka producer
             await _kafkaProducerService.SendMessageAsync("create");
 
             return createdPermission;
+            // return result;
 
         } catch (ArgumentException e)
         {

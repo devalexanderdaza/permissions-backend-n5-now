@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Nest;
+using permissions_backend.Data;
 using permissions_backend.Models.Interface;
 using permissions_backend.Models.Repository;
 using permissions_backend.Services;
@@ -9,7 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 var settings = new ConnectionSettings(new Uri("http://localhost:9200"))
     .DefaultIndex("permissions");
+
 var client = new ElasticClient(settings);
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
