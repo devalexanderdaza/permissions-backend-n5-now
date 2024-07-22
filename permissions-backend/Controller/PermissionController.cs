@@ -11,11 +11,16 @@ public class PermissionController : ControllerBase
 {
     private readonly IPermissionService _permissionService;
     private readonly IElasticsearchService _elasticsearchService;
+    private readonly IKafkaProducerService _kafkaProducerService;
 
-    public PermissionController(IPermissionService permissionService, IElasticsearchService elasticsearchService)
+    public PermissionController(
+        IPermissionService permissionService, 
+        IElasticsearchService elasticsearchService,
+        IKafkaProducerService kafkaProducerService)
     {
         _permissionService = permissionService;
         _elasticsearchService = elasticsearchService;
+        _kafkaProducerService = kafkaProducerService;
     }
     
     [HttpGet("search")]
@@ -58,6 +63,9 @@ public class PermissionController : ControllerBase
             return NotFound();
         };
         
+        // kafka producer
+        await _kafkaProducerService.SendMessageAsync("get");
+        
         return Ok(storedPermission);
     }
 
@@ -72,7 +80,13 @@ public class PermissionController : ControllerBase
     {
         try
         {
-            return await _permissionService.CreatePermissionAsync(permission);
+            var createdPermission = await _permissionService.CreatePermissionAsync(permission);
+            
+            // kafka producer
+            await _kafkaProducerService.SendMessageAsync("create");
+
+            return createdPermission;
+
         } catch (ArgumentException e)
         {
             return BadRequest(e.Message);
@@ -95,6 +109,7 @@ public class PermissionController : ControllerBase
             {
                 return NotFound();
             }
+            
             return Ok(updatedPermission);
         }
         catch (Exception e)

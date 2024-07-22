@@ -14,6 +14,7 @@ var client = new ElasticClient(settings);
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddSingleton<IElasticClient>(client);
+builder.Services.AddSingleton<IKafkaProducerService, KafkaProducerService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
